@@ -16,7 +16,7 @@ client.registry
     .registerDefaultTypes()
     .registerGroups([
         ['fun', 'fun stuff'],
-        ['admin', 'Administrative'],
+        ['admin', 'administrative'],
         ['role', 'role based'],
     ])
     .registerDefaultGroups()
