@@ -1,9 +1,10 @@
 const {Command} = require('discord.js-commando');
 const {MessageEmbed} = require('discord.js');
 
-
 module.exports = class RAS extends Command
 {
+
+
     constructor(client)
     {
         super(client,
@@ -53,31 +54,43 @@ module.exports = class RAS extends Command
     {
         const embed = new MessageEmbed()
             .setTitle(title)
-            .setDescription(content)
-            .setColor(0xaa0b33)
-            .addField('\u200b', '\u200b');
+            .setDescription(content + '\n')
+            .setColor(0xaa0b33);
 
-        let emojis = [];
+        let roleSets = new Map();
         for (const role of roleList)
         {
             const emoji = message.guild.emojis.cache.find(emoji => emoji.name === role.name);
             embed.addField(emoji.toString() + role.name, '\u200b');
-            emojis.push(emoji);
+            roleSets.set(emoji, {emoji: emoji, role: role});
         }
 
-        // let embeddedMessage = in case embed is not the proper message after it has been posted
+
         channel.send(embed).then(sent =>
         {
-            for (const emoji of emojis)
+            for (let values of roleSets.values())
             {
-                try
-                {
-                    sent.react(emoji);
-                } catch (e)
-                {
-                    console.error("error: " + e);
-                }
+                sent.react(values.emoji).catch(console.error);
             }
+
+            const filter = (reaction) =>
+            {
+                return roleSets.has(reaction.emoji);
+            }
+            sent.createReactionCollector(filter)
+                .then((reaction) =>
+                {
+                    const role = roleSets.get(reaction.emoji).role;
+                    const member = reaction.member;
+                    if (member.roles.cache.has(role))   //remove role
+                    {
+                        member.roles.remove(role).catch(console.error);
+                    }
+                    else // give role
+                    {
+                        member.roles.add(role).catch(console.error);
+                    }
+                }).catch(console.error);
         });
     };
 };
