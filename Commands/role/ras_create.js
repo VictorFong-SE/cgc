@@ -50,7 +50,7 @@ module.exports = class RAS extends Command
             });
     }
 
-    run = (message, {channel, content, title, roleList}) =>
+    run = async (message, {channel, content, title, roleList}) =>
     {
         const embed = new MessageEmbed()
             .setTitle(title)
@@ -65,32 +65,31 @@ module.exports = class RAS extends Command
             roleSets.set(emoji, {emoji: emoji, role: role});
         }
 
+        let embedMessage = await channel.send(embed);
 
-        channel.send(embed).then(sent =>
+        for (let values of roleSets.values())
         {
-            for (let values of roleSets.values())
-            {
-                sent.react(values.emoji).catch(console.error);
-            }
+            embedMessage.react(values.emoji).catch(console.error);
+        }
 
-            const filter = (reaction) =>
-            {
-                return roleSets.has(reaction.emoji);
-            }
-            sent.createReactionCollector(filter)
-                .then((reaction) =>
-                {
-                    const role = roleSets.get(reaction.emoji).role;
-                    const member = reaction.member;
-                    if (member.roles.cache.has(role))   //remove role
-                    {
-                        member.roles.remove(role).catch(console.error);
-                    }
-                    else // give role
-                    {
-                        member.roles.add(role).catch(console.error);
-                    }
-                }).catch(console.error);
-        });
+        //     const filter = (reaction) =>
+        //     {
+        //         return roleSets.has(reaction.emoji);
+        //     }
+        //     sent.awaitReactions(filter)
+        //         .then((reaction) =>
+        //         {
+        //             const role = roleSets.get(reaction.emoji).role;
+        //             const member = reaction.member;
+        //             if (member.roles.cache.has(role))   //remove role
+        //             {
+        //                 member.roles.remove(role).catch(console.error);
+        //             } else // give role
+        //             {
+        //                 member.roles.add(role).catch(console.error);
+        //             }
+        //         }).catch(console.error);
+        //
+        // };
     };
-};
+}
